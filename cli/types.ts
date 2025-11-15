@@ -19,7 +19,16 @@ export type Config = {
   "dev-dependencies"?: Dependencies;
   toolchain?: Toolchain;
   requirements?: Requirements;
-  // format ?: Format;
+  canisters?: Record<string, string | CanisterConfig>;
+  build?: {
+    outputDir?: string;
+    args?: string[];
+  };
+};
+
+export type CanisterConfig = {
+  main: string;
+  args?: string[];
 };
 
 export type Dependencies = Record<string, Dependency>;
