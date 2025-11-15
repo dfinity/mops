@@ -29,7 +29,8 @@
   },
   "scripts": {
     "mops": "tsx ./cli.ts",
-    "build": "npm run prepare && npm run bundle",
+    "build": "run-s prepare build:wasm bundle",
+    "build:wasm": "wasm-pack build wasm --target nodejs --out-dir pkg && rm wasm/pkg/.gitignore",
     "dist": "tsc",
     "bundle": "rm -rf ./bundle && bun build ./cli.ts --outdir ./bundle --target node --minify --external @napi-rs/lzma --external fsevents --format esm --define '__dirname=import.meta.dirname' && npm run bundle:fix && npm run bundle:copy && npm run bundle:package-json && npm run bundle:tar",
     "bundle:fix": "rexreplace 'new URL\\(\"\\.\\./templates' 'new URL(\"./templates' bundle/cli.js && rexreplace 'resolve\\(\".*?/xhr-sync-worker\\.js\"\\)' 'resolve(\"./xhr-sync-worker.js\")' bundle/cli.js && rexreplace '\"import.meta.dirname\",\"wasm_bg.wasm\"' 'import.meta.dirname || new URL(\".\", import.meta.url).pathname,\"wasm_bg.wasm\"' bundle/cli.js",
@@ -104,8 +105,10 @@
     "@types/tar": "6.1.13",
     "esbuild": "0.23.1",
     "eslint": "8.57.0",
+    "npm-run-all": "4.1.5",
     "rexreplace": "7.1.13",
     "tsx": "4.19.2",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "wasm-pack": "0.13.1"
   }
 }

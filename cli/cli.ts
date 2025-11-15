@@ -1,52 +1,54 @@
-import process from "node:process";
-import fs from "node:fs";
+import { Argument, Command, Option } from "commander";
 import events from "node:events";
-import { Command, Argument, Option } from "commander";
+import fs from "node:fs";
+import process from "node:process";
 
-import { init } from "./commands/init.js";
-import { publish } from "./commands/publish.js";
-import { sources } from "./commands/sources.js";
-import {
-  checkApiCompatibility,
-  setNetwork,
-  apiVersion,
-  checkConfigFile,
-  getNetworkFile,
-  version,
-} from "./mops.js";
 import { getNetwork } from "./api/network.js";
-import { installAll } from "./commands/install/install-all.js";
-import { search } from "./commands/search.js";
-import { add } from "./commands/add.js";
 import { cacheSize, cleanCache, show } from "./cache.js";
-import { test } from "./commands/test/test.js";
-import { template } from "./commands/template.js";
-import { remove } from "./commands/remove.js";
-import {
-  importPem,
-  getPrincipal,
-  getUserProp,
-  setUserProp,
-} from "./commands/user.js";
-import { bump } from "./commands/bump.js";
-import { sync } from "./commands/sync.js";
-import { outdated } from "./commands/outdated.js";
-import { update } from "./commands/update.js";
+import { add } from "./commands/add.js";
 import { bench } from "./commands/bench.js";
-import { toolchain } from "./commands/toolchain/index.js";
-import { Tool } from "./types.js";
-import * as self from "./commands/self.js";
-import { resolvePackages } from "./resolve-packages.js";
-import { watch } from "./commands/watch/watch.js";
-import { addOwner, printOwners, removeOwner } from "./commands/owner.js";
+import { bump } from "./commands/bump.js";
+import { docsCoverage } from "./commands/docs-coverage.js";
+import { docs } from "./commands/docs.js";
+import { format } from "./commands/format.js";
+import { init } from "./commands/init.js";
+import { installAll } from "./commands/install/install-all.js";
 import {
   addMaintainer,
   printMaintainers,
   removeMaintainer,
 } from "./commands/maintainer.js";
-import { format } from "./commands/format.js";
-import { docs } from "./commands/docs.js";
-import { docsCoverage } from "./commands/docs-coverage.js";
+import { outdated } from "./commands/outdated.js";
+import { addOwner, printOwners, removeOwner } from "./commands/owner.js";
+import { publish } from "./commands/publish.js";
+import { remove } from "./commands/remove.js";
+import { search } from "./commands/search.js";
+import * as self from "./commands/self.js";
+import { sources } from "./commands/sources.js";
+import { sync } from "./commands/sync.js";
+import { template } from "./commands/template.js";
+import { test } from "./commands/test/test.js";
+import { toolchain } from "./commands/toolchain/index.js";
+import { update } from "./commands/update.js";
+import {
+  getPrincipal,
+  getUserProp,
+  importPem,
+  setUserProp,
+} from "./commands/user.js";
+import { watch } from "./commands/watch/watch.js";
+import {
+  apiVersion,
+  checkApiCompatibility,
+  checkConfigFile,
+  getNetworkFile,
+  setNetwork,
+  version,
+} from "./mops.js";
+import { resolvePackages } from "./resolve-packages.js";
+import { Tool } from "./types.js";
+import { build, DEFAULT_BUILD_OUTPUT_DIR } from "./commands/build.js";
+import { checkCandid } from "./commands/check-candid.js";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -250,6 +252,47 @@ program
     } else if (sub == "show") {
       console.log(show());
     }
+  });
+
+// build
+program
+  .command("build [canisters...]")
+  .description("Build a canister")
+  .addOption(new Option("--verbose", "Verbose console output"))
+  .addOption(
+    new Option("--output, -o <output>", "Output directory").default(
+      DEFAULT_BUILD_OUTPUT_DIR,
+    ),
+  )
+  .allowUnknownOption(true) // TODO: restrict unknown before "--"
+  .action(async (canisters, options, command) => {
+    checkConfigFile(true);
+    const extraArgsIndex = command.args.indexOf("--");
+    await installAll({
+      silent: true,
+      lock: "ignore",
+      installFromLockFile: true,
+    });
+    await build(canisters.length ? canisters : undefined, {
+      ...options,
+      extraArgs:
+        extraArgsIndex !== -1 ? command.args.slice(extraArgsIndex + 1) : [],
+    });
+  });
+
+// check-candid
+program
+  .command("check-candid <new-candid> <original-candid>")
+  .description("Check Candid interface compatibility between two Candid files")
+  .addOption(new Option("--verbose", "Verbose console output"))
+  .action(async (newCandid, originalCandid, options) => {
+    checkConfigFile(true);
+    await installAll({
+      silent: true,
+      lock: "ignore",
+      installFromLockFile: true,
+    });
+    await checkCandid(newCandid, originalCandid, options);
   });
 
 // test
