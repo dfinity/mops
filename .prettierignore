@@ -1,5 +1,6 @@
 .svelte-kit/
 declarations/
+target/
 
 *.md
 *.did
