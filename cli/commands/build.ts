@@ -7,6 +7,7 @@ import { getMocPath } from "../helpers/get-moc-path.js";
 import { readConfig } from "../mops.js";
 import { CanisterConfig } from "../types.js";
 import { sourcesArgs } from "./sources.js";
+import { isCandidCompatible } from "../helpers/is-candid-compatible.js";
 
 export interface BuildOptions {
   outputDir: string;
@@ -119,6 +120,48 @@ export async function build(
 
       if (options.verbose && result.stdout && result.stdout.trim()) {
         console.log(result.stdout);
+      }
+
+      if (canister.candid) {
+        const generatedDidPath = join(outputDir, `${canisterName}.did`);
+        const originalCandidPath = canister.candid;
+
+        const result = await isCandidCompatible(
+          generatedDidPath,
+          originalCandidPath,
+          { verbose: options.verbose },
+        );
+
+        if (result.error) {
+          console.error(
+            chalk.red(
+              `Candid compatibility check failed for canister ${canisterName}`,
+            ),
+          );
+          console.error(chalk.red(`Details: ${result.error}`));
+          throw new Error(
+            `Candid compatibility check execution failed for canister ${canisterName}`,
+          );
+        }
+
+        if (!result.compatible) {
+          console.error(
+            chalk.red(
+              `✖ Candid compatibility check failed for canister ${canisterName}`,
+            ),
+          );
+          throw new Error(
+            `Candid interface is not compatible for canister ${canisterName}`,
+          );
+        }
+
+        if (options.verbose) {
+          console.log(
+            chalk.green(
+              `✓ Candid compatibility check passed for canister ${canisterName}`,
+            ),
+          );
+        }
       }
     } catch (error: any) {
       if (error.message?.includes("Build failed for canister")) {

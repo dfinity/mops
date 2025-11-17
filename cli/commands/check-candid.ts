@@ -1,7 +1,5 @@
 import chalk from "chalk";
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
-import { is_candid_compatible } from "../wasm.js";
+import { isCandidCompatible } from "../helpers/is-candid-compatible.js";
 
 export interface CheckCandidOptions {
   verbose?: boolean;
@@ -14,52 +12,24 @@ export async function checkCandid(
 ): Promise<void> {
   const { verbose = false } = options;
 
-  if (!existsSync(newPath)) {
-    throw new Error(`New Candid file not found: ${newPath}`);
-  }
-  if (!existsSync(originalPath)) {
-    throw new Error(`Original Candid file not found: ${originalPath}`);
-  }
-
-  const resolvedNewCandidPath = path.resolve(newPath);
-  const resolvedOriginalCandidPath = path.resolve(originalPath);
-
   console.log(chalk.blue("Checking Candid compatibility"));
-  console.log(chalk.gray(`New Candid file: ${resolvedNewCandidPath}`));
-  console.log(
-    chalk.gray(`Original Candid file: ${resolvedOriginalCandidPath}`),
-  );
+  console.log(chalk.gray(`New Candid file: ${newPath}`));
+  console.log(chalk.gray(`Original Candid file: ${originalPath}`));
 
-  try {
-    verbose && console.time("check-candid");
+  const result = await isCandidCompatible(newPath, originalPath, {
+    verbose,
+  });
 
-    const newText = readFileSync(resolvedNewCandidPath, "utf8");
-    const originalText = readFileSync(resolvedOriginalCandidPath, "utf8");
-
-    if (verbose) {
-      console.log(
-        chalk.gray(
-          `Comparing Candid interfaces using Wasm compatibility checker`,
-        ),
-      );
-    }
-
-    const result = is_candid_compatible(newText, originalText);
-    if (!result) {
-      console.error(chalk.red("✖ Candid compatibility check failed"));
-      process.exit(1);
-    }
-
-    console.log(chalk.green("✓ Candid compatibility check passed"));
-
-    verbose && console.timeEnd("check-candid");
-  } catch (error: any) {
+  if (result.error) {
     console.error(chalk.red("Error while checking Candid compatibility"));
-
-    if (error.message) {
-      console.error(chalk.red(`Details: ${error.message}`));
-    }
-
+    console.error(chalk.red(`Details: ${result.error}`));
     throw new Error("Candid compatibility check execution failed");
   }
+
+  if (!result.compatible) {
+    console.error(chalk.red("✖ Candid compatibility check failed"));
+    process.exit(1);
+  }
+
+  console.log(chalk.green("✓ Candid compatibility check passed"));
 }
