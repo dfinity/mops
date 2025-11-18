@@ -15,7 +15,8 @@
     "!build.sh",
     "!DEVELOPMENT.md",
     "!.mops",
-    "/templates"
+    "/templates",
+    "/wasm"
   ],
   "homepage": "https://mops.one",
   "repository": {
@@ -29,7 +30,7 @@
   },
   "scripts": {
     "mops": "tsx ./cli.ts",
-    "build": "run-s prepare build:wasm bundle",
+    "build": "run-s prepare bundle",
     "build:wasm": "wasm-pack build wasm --target nodejs --out-dir pkg && rm wasm/pkg/.gitignore",
     "dist": "npm run build:wasm && tsc && mkdir -p dist/wasm && cp -r wasm/pkg dist/wasm",
     "bundle": "rm -rf ./bundle && bun build ./cli.ts --outdir ./bundle --target node --minify --external @napi-rs/lzma --external fsevents --format esm --define '__dirname=import.meta.dirname' && npm run bundle:fix && npm run bundle:copy && npm run bundle:package-json && npm run bundle:tar",
@@ -38,7 +39,7 @@
     "bundle:package-json": "tsx bundle-package-json.ts",
     "bundle:tar": "rm -f bundle/cli.tgz && touch -t 200101010101 bundle/cli.tgz && find bundle -exec touch -d '1970-01-01 00:00:00' {} + && tar --sort name --exclude bundle/cli.tgz -cvf - bundle | gzip -n > bundle/cli.tgz",
     "copy": "cp -r commands/bench dist/commands && cp -r declarations templates package.json bin dist | true",
-    "prepare": "rm -rf dist && npm run dist && npm run copy && npm run fix-dist",
+    "prepare": "rm -rf dist && run-s dist copy fix-dist",
     "fix-dist": "tsx ./fix-dist.ts",
     "release": "tsx release-cli.ts",
     "check": "tsc --project tsconfig.json --noEmit",

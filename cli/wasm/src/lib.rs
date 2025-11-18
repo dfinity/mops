@@ -8,12 +8,6 @@ extern "C" {
     // fn alert(s: &str);
 }
 
-type JsResult = Result<JsValue, JsError>;
-
-fn js_return<T: Serialize + ?Sized>(value: &T) -> JsResult {
-    to_value(value).map_err(|e| JsError::new(&format!("Serialization error ({})", e)))
-}
-
 #[wasm_bindgen(start)]
 pub fn start() {
     #[cfg(feature = "console_error_panic_hook")]
