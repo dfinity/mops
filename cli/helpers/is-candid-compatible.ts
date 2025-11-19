@@ -1,6 +1,6 @@
 import { readFile, access } from "node:fs/promises";
 import path from "node:path";
-import { is_candid_compatible } from "../wasm.js";
+import { getWasmBindings } from "../wasm.js";
 
 export async function isCandidCompatible(
   newPath: string,
@@ -18,5 +18,5 @@ export async function isCandidCompatible(
   }
   const newText = await readFile(path.resolve(newPath), "utf8");
   const originalText = await readFile(path.resolve(originalPath), "utf8");
-  return is_candid_compatible(newText, originalText);
+  return getWasmBindings().is_candid_compatible(newText, originalText);
 }
