@@ -10,6 +10,7 @@ import { add } from "./commands/add.js";
 import { bench } from "./commands/bench.js";
 import { build, DEFAULT_BUILD_OUTPUT_DIR } from "./commands/build.js";
 import { bump } from "./commands/bump.js";
+import { checkCandid } from "./commands/check-candid.js";
 import { docsCoverage } from "./commands/docs-coverage.js";
 import { docs } from "./commands/docs.js";
 import { format } from "./commands/format.js";
@@ -284,6 +285,20 @@ program
       extraArgs:
         extraArgsIndex !== -1 ? command.args.slice(extraArgsIndex + 1) : [],
     });
+  });
+
+// check-candid
+program
+  .command("check-candid <new-candid> <original-candid>")
+  .description("Check Candid interface compatibility between two Candid files")
+  .action(async (newCandid, originalCandid) => {
+    checkConfigFile(true);
+    await installAll({
+      silent: true,
+      lock: "ignore",
+      installFromLockFile: true,
+    });
+    await checkCandid(newCandid, originalCandid);
   });
 
 // test
