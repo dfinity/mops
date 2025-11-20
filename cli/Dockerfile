@@ -2,7 +2,6 @@ FROM --platform=linux/amd64 zenvoich/mops-builder:1.1.0@sha256:9bb87e843a90f1c12
 
 # install Rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh -s -- --default-toolchain=1.91.1 -y
-ENV PATH="/root/.cargo/bin:${PATH}"
 
 # clone repository
 ARG COMMIT_HASH
@@ -17,7 +16,7 @@ RUN bun i --ignore-scripts
 # build
 ARG MOPS_VERSION
 RUN npm version $MOPS_VERSION --allow-same-version
-RUN npm run build
+RUN . $HOME/.cargo/env && npm run build
 
 # verify
 ARG SHASUM
