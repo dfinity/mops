@@ -16,7 +16,7 @@ RUN bun i --ignore-scripts
 # build
 ARG MOPS_VERSION
 RUN npm version $MOPS_VERSION --allow-same-version
-RUN . $HOME/.cargo/env && npm run build
+RUN /bin/bash -c "source ~/.cargo/env && npm run build"
 
 # verify
 ARG SHASUM
