@@ -29,7 +29,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "mops": "tsx ./environments/nodejs/cli.ts",
+    "mops": "tsx ./environments/nodejs/cli",
     "build": "run-s prepare bundle",
     "build:wasm": "run-s build:wasm:nodejs build:wasm:web",
     "build:wasm:nodejs": "wasm-pack build wasm --target nodejs --out-dir pkg/nodejs && rm wasm/pkg/nodejs/.gitignore",

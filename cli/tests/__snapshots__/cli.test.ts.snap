@@ -14,6 +14,18 @@ build canister foo
 }
 `;
 
+exports[`mops build error 2`] = `
+{
+  "exitCode": 1,
+  "stderr": "Candid compatibility check failed for canister bar",
+  "stdout": "
+> ic-mops@1.12.0 mops
+> tsx ./environments/nodejs/cli build bar
+
+build canister bar",
+}
+`;
+
 exports[`mops build success 1`] = `
 {
   "exitCode": 0,
