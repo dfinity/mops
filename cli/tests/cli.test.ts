@@ -62,12 +62,12 @@ describe("mops", () => {
   test("build error", async () => {
     const cwd = path.join(import.meta.dirname, "build/error");
     await cliSnapshot(["build", "foo"], { cwd }, 0);
-    await expect(cliSnapshot(["build", "bar"], { cwd }, 1)).rejects.toThrow(
+    expect((await cliSnapshot(["build", "bar"], { cwd }, 1)).stderr).toMatch(
       "Candid compatibility check failed for canister bar",
     );
-    await expect(
-      cliSnapshot(["build", "foo", "bar"], { cwd }, 1),
-    ).rejects.toThrow("Candid compatibility check failed for canister bar");
+    expect(
+      (await cliSnapshot(["build", "foo", "bar"], { cwd }, 1)).stderr,
+    ).toMatch("Candid compatibility check failed for canister bar");
   });
 
   test("check-candid", async () => {
